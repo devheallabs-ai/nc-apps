@@ -1,0 +1,60 @@
+name: NC Apps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-apps:
+    name: Validate — ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - stock-market
+          - devheal-portal
+          - enterprise-ops-dashboard
+          - hiveant-dashboard
+          - swarmops-dashboard
+          - world-model
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check app structure
+        run: |
+          APP="${{ matrix.app }}"
+          echo "Checking $APP..."
+          if [ -d "$APP/backend" ]; then
+            nc_count=$(find "$APP/backend" -name "*.nc" | wc -l)
+            echo "  Backend: $nc_count NC files"
+          else
+            echo "  No backend directory"
+          fi
+          if [ -d "$APP/ui" ]; then
+            html_count=$(find "$APP/ui" -name "*.html" | wc -l)
+            echo "  UI: $html_count HTML files"
+          else
+            echo "  No UI directory"
+          fi
+
+  validate-frontends:
+    name: Validate all frontends
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check all app HTML files
+        run: |
+          for app_dir in */; do
+            app=$(basename "$app_dir")
+            [ "$app" = ".github" ] && continue
+            [ ! -d "$app_dir" ] && continue
+            ui_dir="$app_dir/ui"
+            if [ -d "$ui_dir" ]; then
+              html_count=$(find "$ui_dir" -name "*.html" | wc -l)
+              echo "OK: $app — $html_count HTML file(s)"
+            fi
+          done

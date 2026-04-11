@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nc-playground-api
+    env: docker
+    dockerfilePath: nc-apps/playground-server/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NC_BINARY
+        value: /usr/local/bin/nc
+      - key: NC_TIMEOUT
+        value: "10"
+    healthCheckPath: /health
+    autoDeploy: true
